@@ -1,0 +1,2 @@
+#-------starter自动装配---------
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.tnessn.couscous.spring.boot.starter.CouscousConfig

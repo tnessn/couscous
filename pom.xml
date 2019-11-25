@@ -34,6 +34,10 @@
 		<module>couscous-lang</module>
 		<module>couscous-ice</module>
 		<module>couscous-spring</module>
+<<<<<<< HEAD
+=======
+		<module>couscous-spring-boot-starter</module>
+>>>>>>> branch 'master' of https://github.com/tnessn/couscous.git
 	</modules>
 
 

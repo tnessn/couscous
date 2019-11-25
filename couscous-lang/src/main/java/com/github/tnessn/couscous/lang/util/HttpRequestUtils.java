@@ -11,33 +11,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-// TODO: Auto-generated Javadoc
+import com.alibaba.fastjson.JSON;
+
+
 /**
- * The Class HttpRequestUtils.
- *
+ * 
  * @author huangjinfeng
  */
 public class HttpRequestUtils {
-
-	/**
-	 * Checks if is ajax.
-	 *
-	 * @param request the request
-	 * @return true, if is ajax
-	 */
+	
 	public static boolean isAjax(ServletRequest request) {
 		String header = ((HttpServletRequest) request).getHeader("X-Requested-With");
 		boolean isAjax = "XMLHttpRequest".equals(header) ? true : false;
 		return isAjax;
 	}
 
-	/**
-	 * Checks if is json content.
-	 *
-	 * @param request the request
-	 * @return true, if is json content
-	 */
 	public static boolean isJsonContent(ServletRequest request) {
 		String contentType = ((HttpServletRequest) request).getHeader("Content-type");
 		if (StringUtils.isNotBlank(contentType)) {
@@ -48,12 +39,6 @@ public class HttpRequestUtils {
 		return false;
 	}
 
-	/**
-	 * Checks if is html.
-	 *
-	 * @param request the request
-	 * @return true, if is html
-	 */
 	public static boolean isHTML(ServletRequest request) {
 		HttpServletRequest req = (HttpServletRequest) request;
 		String servletPath = req.getServletPath();
@@ -62,26 +47,12 @@ public class HttpRequestUtils {
 		return isHTML(servletPath, method, contextType);
 	}
 
-	/**
-	 * Checks if is html.
-	 *
-	 * @param servletPath the servlet path
-	 * @param method the method
-	 * @param contextType the context type
-	 * @return true, if is html
-	 */
 	public static boolean isHTML(String servletPath, String method, String contextType) {
 		String urlExtension = StringUtils.substringAfterLast(servletPath, ".");
 		return ("HTML".equalsIgnoreCase(urlExtension) || "HTM".equalsIgnoreCase(urlExtension))
 				&& "GET".equalsIgnoreCase(method) && StringUtils.containsIgnoreCase(contextType, "text/html");
 	}
 
-	/**
-	 * Read json req.
-	 *
-	 * @param request the request
-	 * @return the string
-	 */
 	public static String readJsonReq(ServletRequest request) {
 		BufferedReader br = null;
 		try {
@@ -106,12 +77,6 @@ public class HttpRequestUtils {
 		return "";
 	}
 
-	/**
-	 * Write json resp.
-	 *
-	 * @param obj the obj
-	 * @param response the response
-	 */
 	public static void writeJsonResp(Object obj, ServletResponse response) {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		httpResponse.setCharacterEncoding("UTF-8");
@@ -121,7 +86,7 @@ public class HttpRequestUtils {
 		PrintWriter writer = null;
 		try {
 			writer = response.getWriter();
-			writer.write(JsonUtils.bean2JsonStr(obj));
+			writer.write(JSON.toJSONString(obj));
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -132,13 +97,6 @@ public class HttpRequestUtils {
 		}
 	}
 
-	/**
-	 * Write json resp.
-	 *
-	 * @param obj the obj
-	 * @param response the response
-	 * @param httpStatusCode the http status code
-	 */
 	public static void writeJsonResp(Object obj, ServletResponse response, int httpStatusCode) {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		httpResponse.setCharacterEncoding("UTF-8");
@@ -148,7 +106,7 @@ public class HttpRequestUtils {
 		PrintWriter writer = null;
 		try {
 			writer = response.getWriter();
-			writer.write(JsonUtils.bean2JsonStr(obj));
+			writer.write(JSON.toJSONString(obj));
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -158,16 +116,47 @@ public class HttpRequestUtils {
 			}
 		}
 	}
-
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		System.out.println(isHTML("/idpstat.html", "get", "text/html;charset=utf-8"));
-		System.out.println(isHTML("/idpstat.htm", "get", "text/html;charset=utf-8"));
-		System.out.println(isHTML("/idpstat.html", "get", "text/html;charset=utf-8"));
+	
+	public static String getIPAddress() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		return getIPAddress(request);
 	}
+	
+	
+    public static String getIPAddress(HttpServletRequest request) {
+      String ip = null;
+
+      //X-Forwarded-For：Squid 服务代理
+      String ipAddresses = request.getHeader("X-Forwarded-For");
+
+      if (ipAddresses == null || ipAddresses.length() == 0 || "unknown".equalsIgnoreCase(ipAddresses)) {
+          //Proxy-Client-IP：apache 服务代理
+          ipAddresses = request.getHeader("Proxy-Client-IP");
+      }
+
+      if (ipAddresses == null || ipAddresses.length() == 0 || "unknown".equalsIgnoreCase(ipAddresses)) {
+          //WL-Proxy-Client-IP：weblogic 服务代理
+          ipAddresses = request.getHeader("WL-Proxy-Client-IP");
+      }
+
+      if (ipAddresses == null || ipAddresses.length() == 0 || "unknown".equalsIgnoreCase(ipAddresses)) {
+          //HTTP_CLIENT_IP：有些代理服务器
+          ipAddresses = request.getHeader("HTTP_CLIENT_IP");
+      }
+
+      if (ipAddresses == null || ipAddresses.length() == 0 || "unknown".equalsIgnoreCase(ipAddresses)) {
+          //X-Real-IP：nginx服务代理
+          ipAddresses = request.getHeader("X-Real-IP");
+      }
+
+      //有些网络通过多层代理，那么获取到的ip就会有多个，一般都是通过逗号（,）分割开来，并且第一个ip为客户端的真实IP
+      if (ipAddresses != null && ipAddresses.length() != 0) {
+          ip = ipAddresses.split(",")[0];
+      }
+     
+      return ip;
+  }
+	
+
 
 }
