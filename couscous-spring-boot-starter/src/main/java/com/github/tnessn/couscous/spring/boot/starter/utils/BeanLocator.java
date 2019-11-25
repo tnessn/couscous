@@ -1,4 +1,4 @@
-package com.github.tnessn.couscous.spring.config;
+package com.github.tnessn.couscous.spring.boot.starter.utils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
